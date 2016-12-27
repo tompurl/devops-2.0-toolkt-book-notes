@@ -1,0 +1,5 @@
+#+TITLE: README
+
+These are simply my notes from reading the book "The Devops 2.0
+Toolkit". Please note that the images are from the book and are not
+owned by me. I include them here as references.

@@ -1,0 +1,286 @@
+#+TITLE: The DevOps 2.0 Toolkit - Book Notes
+
+* Document Links
+- https://www.safaribooksonline.com/library/view/the-devops-20/9781785289194/index.html
+
+* Notes
+
+** Chapter 1 - The DevOps Ideal
+
+*** Continuous Integration, Delivery and Deployment
+
+CI/CD is wonderful, but you can't just view it through the lens of
+your Dev or DevOps organization. Your strategy needs to span your
+entire business and everyone needs to be in sync.
+
+*** Architecture
+
+Microservices have also been very good for agile development but
+they are difficult to implement properly. And if you're not careful
+microservices can give you all of the same problems that you have with
+large, monolithic applications.
+
+*** Deployments
+
+Being able to couple your code with your host/vm/container/whatever 
+has improved deployment quality significantly. Ideally these "hosts"
+should be as immutable as possible and store logs on a centralized
+server.
+
+*** Orchestration
+
+Tools like Puppet and Chef are also very helpful but require a lot of
+care and feeding. You have to invest in maintaining your config
+management code.
+
+*** The Light at the End of the Deployment pipeline
+
+Ugh, this is cornball.
+
+** Chapter 2 - The Implementation Breakthrough - Continuous Deployment, Microservices, and Containers
+
+These three technologies don't /have/ to be used together but great
+things happen when they are.
+
+*** Continuous Integration
+
+*Continuous integration* is: 
+
+- Integrating, building, and testing code within the development
+  environment.
+- Integrating code into a shared repository often.
+
+The CI pipeline should run on every commit or push.
+
+TDD (or some sort of testing methodology) is necessary.
+
+When the CI pipeline fails, fixing it should be your top priority.
+
+Here's the high-level CI process
+
+**** Pushing to the code repository
+
+The mainline branch needs to receive commits often. 
+
+Ideally if a developer breaks the pipeline then she needs to be the
+one who fixes it.
+
+**** Static analysis
+
+Static code analysis is often the first step in a CI pipeline because
+it is so fast.
+
+Optional according to the author.
+
+**** Pre-Deployment testing
+
+These should be mandatory.
+
+*Pre-deployment testing* is a general term for all /dynamic/ testing
+that does not require coed to be deloyed to a server (e.g. unit
+tests).
+
+**** Packaging and Deployment to the Test environment 
+
+Once the code is packaged it should be deployed to a test environment.
+
+**** Post-Deployment testing
+
+These are the tests that you can only run after code has been deployed
+to a server.
+
+Once this phase has been successfully completed your pipeline is
+complete.
+*** Continuous Delivery And Deployment
+
+CI's job is to ensure that what you're adding to the code repo is
+high-quality and works with everyone else's code. CD creates
+deployables that can be deployed to prod. It is "finished" and ready
+for release.
+
+The pipeline process for CI and CD are basically the same. CD just
+adds the following:
+
+- A step that automatically deploys every build to Prod
+- Another *post-deployment testing* step where the code is
+  automatically tested on Prod.
+  - You may automatically roll back the change if this step fails.
+
+CD infers that each committal to the repo is automatically pushed to
+prod, and we know that we should push to the trunk frequently.  One
+possible problem with this process is that you will end up pushing a
+feature to prod that's not ready to be used for some reason. You can 
+work around this with *feature toggles*.
+
+**** Microservices
+
+The argument here is that your CI/CD process will run faster on 
+smaller chunks of code, so changing a microservice is much faster
+than changing a large monolithic app. 
+
+#+BEGIN_NOTE
+
+I think this is a simplistic argument. Getting new features to prod
+is important, but so are the following:
+
+- Running a high-quality application
+- Maintenance costs of admins and monitoring software
+
+Microservices add complexity to your architecture, and this complexity
+can make troubleshooting and maintaining your software exponentially
+more expensive in both time and money.
+
+So I guess I'm saying that I hope that these points are addressed
+somewhere in this book :-) .
+
+#+END_NOTE
+
+**** Containers
+
+Downsides of monolithic apps:
+
+- Require runtime standardization
+  - E.g. It's hard to run multiple versions of Java or WAS or whatever
+    on a machine so you have to standardize on one.
+
+Containers must possess the following traits:
+
+- Self-sufficiency
+  - Everything that your app needs to run must be part of the
+    container.
+  - Ha ha ha ha. That's why they often require complex service
+    discovery systems then, right?
+- Immutability
+
+#+BEGIN_NOTE
+
+Ok, here's my comments. In practice, this really is very similar
+to the JEE model. You put everything you need in a binary zip
+file, drop it in some sort of mainframe and it should just work. 
+After all, EAR's and JAR's are also supposedly self-sufficient
+and immutable. 
+
+The only obvious difference so far is that you aren't tied to a single
+version of Java or your app server, or even a single language. That's
+really cool, and if you're a Python shop already it's a big boon to
+be able to get a lot of the benefits of the JEE model without having
+to use Java.
+
+The devil's in the details when it comes to containers and the JEE
+model:
+
+- There really is no such thing as a completely self-sufficient
+  binary, so how do you handle *service discovery*? JEE uses JNDI, and
+  there are a lot of options for containers.
+- How do you handle clustering? Not everything can work in a
+  know-nothing farm. Do you count on the app having built-in
+  capabilities or do you rely on something like DC/OS or Kubernetes?
+- How will your containers load balance requests?
+- What about properties that you may want to set at a global level?
+  JEE has it's warts, but it makes it very easy to do things like
+  configure SSL certs at a global level. How do I handle common
+  configuration tasks like this with a group of containers?
+- And I know I've mentioned this already but how will your
+  *troubleshoot* your cluster? What tools do you have to manage the
+  high costs of all of the accidental complexity that you've added
+  to your system?
+  - A subset of this is *logging*. 
+- What *Hypervisor API* are you coding against? With JEE you use Java
+  and that funny framework but this problem doesn't go away with
+  containers. Kubernetes and DC/OS both have their own funny way of
+  doing things too that you have to be aware of when creating those
+  containers.
+
+I guess what I'm trying to say is that containers don't actually make
+these types JEE or "monolithic app" issues disappear. These details
+are just what you have to deal with when developing most non-trivial
+applications. So maybe instead of pretending that "New Technology Foo"
+will make all of the bad details go away, we should embrace these ugly
+details and try to find the best way to manage them.
+
+And finally, JEE isn't the *worst* way in the world to manage these
+details as long as your happy with coding against the JEE API in 
+a single version of Java. But I can't blame you if you're not :-) 
+
+#+END_NOTE
+
+*** The Three Musketeers - Synergy of Continuous Deployment, Microservices, and Containers
+
+Lots of awesome ahead apparently :-)
+** Chapter 3 - System Architecture
+
+We're going to complete a project where create an online shop that
+sells mostly books but other things too. So let's define the 
+architecture.
+
+*** Monolithic Applications
+
+The bigger an application gets to more time it takes to change,
+test, and deploy it.
+
+Changes to one layer of a system (e.g. the presentation layer) often
+result in changes to other layers (e.g. the db layer). This tight
+coupling makes changes very expensive.
+
+Scaling is difficult because you often have to deploy your WAR file on
+multiple hosts, even if it's just one small part of the WAR file that
+needs to be scaled.
+
+**** Services Split Horizontally
+
+To solve these problems SOA was created which is based on these 
+four concepts:
+
+- Boundaries are explicit
+- Services are autonomous
+- Services share schema and contract but not class
+- Services compatibility is based on policy
+
+A lot of companies tried implementing SOA with ESB's. However, there
+was a problem where people used old processes with new tools so SOA
+was never implemented properly.
+
+#+BEGIN_NOTE
+
+In don't mean to be nit-picky but I feel like I'm fighting against
+the editing in this book. For example, what does this mean?
+
+"However, the common problem with this move is the way we are used
+working that often resulted in an intention to artificially apply SOA
+architecture into the existing model."
+
+I'm reading the same sentences 3 or 4 times just to guess what they 
+mean. Also, I feel that I'm reading the same point multiple times.
+
+Which is lame, because this book has a lot of great and timely
+information. But honestly these editing problems would make me
+reconsider if I wanted to finish it if it hadn't been highly
+recommended by an architect whom I highly respect.
+
+#+END_NOTE
+
+**** Microservices
+
+With microservices we create systems that are composed of "servers" that
+are built, tested and deployed independently. It's SOA without the
+ESB and it's taking SOA back to its roots.
+
+Key microservice points:
+
+- Do one thing
+- Tool independence - you should be able to pick whatever language,
+  framework, or whatever that works best for this app.
+- Loose coupling because each microservices is physically separate.
+- Independent teams working on different microservices.
+- Easier testing and CI/CD.
+
+Using "decentralized data storage" makes working with microservices
+easier.
+
+*** Monolithic Applications and Microservices Compared
+
+There are disadvantages to using microservices.
+
+**** Operational and Deployment Complexity
+
+
